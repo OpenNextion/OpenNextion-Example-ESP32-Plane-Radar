@@ -6,6 +6,8 @@
 
 Firmware for an **ESP32-C3 Super Mini** and a **1.28″ round GC9A01** display (240×240). Shows a circular **ADS-B radar** around your configured location, with **WiFiManager** for first-time setup.
 
+This fork also includes first-pass board targets for OpenNextion ESP32-S3 display boards while keeping the original circular radar UI intact.
+
 ## What it does
 
 1. **Wi‑Fi setup** (if needed) — captive portal on AP **`PlaneRadar-Setup`**
@@ -13,14 +15,24 @@ Firmware for an **ESP32-C3 Super Mini** and a **1.28″ round GC9A01** display (
 
 After Wi‑Fi is saved, the device reconnects automatically; the radar runs in the main loop with periodic ADS-B updates (~5 s).
 
-## Controls (BOOT, GPIO 9, active LOW)
+## Supported boards
+
+| PlatformIO env | Board | Display | Resolution | Notes |
+|----------------|-------|---------|------------|-------|
+| `supermini` | ESP32-C3 Super Mini | GC9A01 round SPI TFT | 240×240 | Original target |
+| `onx2432g028` | OpenNextion ONX2432G028 | ST7789 SPI TFT | 240×320 | 240×240 radar view centered vertically |
+| `onx3248g035` | OpenNextion ONX3248G035 | ST7796U SPI TFT | 320×480 | 240×240 radar view centered; frame sprite uses PSRAM |
+
+The OpenNextion targets use ESP32-S3R8 modules with 16 MB flash and 8 MB OPI PSRAM. Touch and SD card hardware are present on the boards but are not used by this firmware yet.
+
+## Controls (BOOT, active LOW)
 
 | Action | Effect |
 |--------|--------|
 | **Short tap** | Cycle range preset (5 → 10 → 15 → 25 km); saved to flash |
 | **Hold 3 s** | Clear Wi‑Fi, location, and units; reboot into setup portal |
 
-During setup you can also hold BOOT at power-on to force a credential reset (same as the long press).
+BOOT is GPIO **9** on the original ESP32-C3 Super Mini target and GPIO **0** on the OpenNextion ESP32-S3 targets. During setup you can also hold BOOT at power-on to force a credential reset (same as the long press).
 
 ## Wi‑Fi setup portal
 
@@ -110,6 +122,7 @@ Range presets: `include/ui/radar_range.h` (`kRangePresets`).
 include/
   config.h
   hardware/
+    board_support.h
     lgfx_config.hpp
     display.h
     display_font.h
@@ -125,6 +138,9 @@ include/
     wifi_setup.h
     radar_location.h
     adsb_client.h
+boards/
+  onx2432g028.json
+  onx3248g035.json
 data/
   ui_font.vlw              — embedded smooth UI font (Noto Sans Bold)
 scripts/
@@ -151,40 +167,80 @@ src/
 | SCL (SCLK) | GPIO **4** |
 | BOOT (user) | GPIO **9** |
 
+## Wiring (OpenNextion ONX boards)
+
+| Function | ONX2432G028 / ONX3248G035 |
+|----------|---------------------------|
+| I2C SDA / SCL | GPIO **8** / GPIO **7** |
+| LCD SCLK / MOSI | GPIO **5** / GPIO **1** |
+| LCD CS / DC | GPIO **2** / GPIO **3** |
+| LCD BL | GPIO **6** |
+| LCD RST | PCF8574 EXIO6 |
+| SDCS release | PCF8574 EXIO7 |
+| BOOT (user) | GPIO **0** |
+
 ## Build
 
-```bash
-pio run -t upload
-pio device monitor
-```
-
-- PlatformIO env: **`supermini`**
-- Serial: **115200** baud
-- USB CDC on boot enabled in `platformio.ini` for the Super Mini
-
-### Web-flashable release image
-
-Single `.bin` for [esptool-js](https://espressif.github.io/esptool-js/) and similar tools (ESP32-C3, 4 MB, flash at **0x0**):
-
-```bash
-chmod +x scripts/merge-firmware.sh   # once
-./scripts/merge-firmware.sh
-```
-
-Writes `release/plane-radar-merged.bin`. Skip rebuild if firmware is already built:
-
-```bash
-./scripts/merge-firmware.sh --no-build
-```
-
-Or via PlatformIO only (output: `.pio/build/supermini/firmware-merged.bin`):
+Build a specific target with its PlatformIO environment:
 
 ```bash
 pio run -e supermini
-pio run -t merge -e supermini
+pio run -e onx2432g028
+pio run -e onx3248g035
 ```
 
-Put the board in download mode (hold **BOOT**, tap **RESET**), then flash with Chrome/Edge over USB.
+Flash a target:
+
+```bash
+pio run -e <env> -t upload --upload-port <PORT>
+```
+
+Monitor serial output:
+
+```bash
+pio device monitor -e <env> --port <PORT> --baud 115200
+```
+
+- Available PlatformIO envs: **`supermini`**, **`onx2432g028`**, **`onx3248g035`**
+- Serial: **115200** baud
+- USB CDC on boot is enabled in `platformio.ini` for the Super Mini; the OpenNextion ESP32-S3 boards use their USB-UART serial port
+
+### Web-flashable release image
+
+Single `.bin` for [esptool-js](https://espressif.github.io/esptool-js/) and similar tools (flash at **0x0**):
+
+```bash
+pio run -e <env> -t merge
+```
+
+Outputs:
+
+```text
+.pio/build/<env>/firmware-merged.bin
+```
+
+The helper script can also build and copy a merged image into `release/`:
+
+```bash
+chmod +x scripts/merge-firmware.sh   # once
+./scripts/merge-firmware.sh --env supermini -o release/plane-radar-supermini-merged.bin
+./scripts/merge-firmware.sh --env onx2432g028 -o release/plane-radar-onx2432g028-merged.bin
+./scripts/merge-firmware.sh --env onx3248g035 -o release/plane-radar-onx3248g035-merged.bin
+```
+
+Skip rebuild if firmware is already built:
+
+```bash
+./scripts/merge-firmware.sh --env onx3248g035 --no-build -o release/plane-radar-onx3248g035-merged.bin
+```
+
+Put the board in download mode (hold **BOOT**, tap **RESET**), then flash with Chrome/Edge over USB, or use `esptool`:
+
+```bash
+python -m esptool --chip esp32c3 -p <PORT> -b 921600 write_flash 0x0 .pio/build/supermini/firmware-merged.bin
+python -m esptool --chip esp32s3 -p <PORT> -b 921600 write_flash 0x0 .pio/build/onx2432g028/firmware-merged.bin
+python -m esptool --chip esp32s3 -p <PORT> -b 921600 write_flash 0x0 .pio/build/onx3248g035/firmware-merged.bin
+```
 
 ### CI and releases (GitHub Actions)
 
