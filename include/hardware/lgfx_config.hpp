@@ -8,7 +8,9 @@
 /** LovyanGFX device. Panel selection and pins come from config.h build flags. */
 class LGFX : public lgfx::LGFX_Device {
   lgfx::Bus_SPI _bus;
-#if defined(BOARD_ONX2432G028)
+#if defined(BOARD_ONX3248G035)
+  lgfx::Panel_ST7796 _panel;
+#elif defined(BOARD_ONX2432G028)
   lgfx::Panel_ST7789 _panel;
 #else
   lgfx::Panel_GC9A01 _panel;

@@ -12,6 +12,14 @@ constexpr bool kBoardOnx2432g028 = true;
 constexpr bool kBoardOnx2432g028 = false;
 #endif
 
+#if defined(BOARD_ONX3248G035)
+constexpr bool kBoardOnx3248g035 = true;
+#else
+constexpr bool kBoardOnx3248g035 = false;
+#endif
+
+constexpr bool kBoardOnx = kBoardOnx2432g028 || kBoardOnx3248g035;
+
 // --- Wi-Fi portal ---
 constexpr char kPortalApName[] = "PlaneRadar-Setup";
 constexpr char kPortalIp[] = "192.168.4.1";
@@ -32,36 +40,30 @@ constexpr unsigned long kWifiReconnectIntervalMs = 15000;
 // --- User input (active LOW when present) ---
 constexpr bool kHasBootButton = true;
 constexpr bool kBootTapChangesRange = true;
-constexpr gpio_num_t kBootPin =
-    kBoardOnx2432g028 ? GPIO_NUM_0 : GPIO_NUM_9;
+constexpr gpio_num_t kBootPin = kBoardOnx ? GPIO_NUM_0 : GPIO_NUM_9;
 constexpr unsigned long kBootResetHoldMs = 3000UL;
 /** Ignore BOOT taps shorter than this (debounce). */
 constexpr unsigned long kBootTapMinMs = 40UL;
 
 // --- Display ---
-constexpr gpio_num_t kDisplayPinRst =
-    kBoardOnx2432g028 ? GPIO_NUM_NC : GPIO_NUM_0;
-constexpr gpio_num_t kDisplayPinCs =
-    kBoardOnx2432g028 ? GPIO_NUM_2 : GPIO_NUM_1;
-constexpr gpio_num_t kDisplayPinDc =
-    kBoardOnx2432g028 ? GPIO_NUM_3 : GPIO_NUM_10;
-constexpr gpio_num_t kDisplayPinMosi =
-    kBoardOnx2432g028 ? GPIO_NUM_1 : GPIO_NUM_3;
-constexpr gpio_num_t kDisplayPinSclk =
-    kBoardOnx2432g028 ? GPIO_NUM_5 : GPIO_NUM_4;
-constexpr gpio_num_t kDisplayPinBl =
-    kBoardOnx2432g028 ? GPIO_NUM_6 : GPIO_NUM_NC;
+constexpr gpio_num_t kDisplayPinRst = kBoardOnx ? GPIO_NUM_NC : GPIO_NUM_0;
+constexpr gpio_num_t kDisplayPinCs = kBoardOnx ? GPIO_NUM_2 : GPIO_NUM_1;
+constexpr gpio_num_t kDisplayPinDc = kBoardOnx ? GPIO_NUM_3 : GPIO_NUM_10;
+constexpr gpio_num_t kDisplayPinMosi = kBoardOnx ? GPIO_NUM_1 : GPIO_NUM_3;
+constexpr gpio_num_t kDisplayPinSclk = kBoardOnx ? GPIO_NUM_5 : GPIO_NUM_4;
+constexpr gpio_num_t kDisplayPinBl = kBoardOnx ? GPIO_NUM_6 : GPIO_NUM_NC;
 
-constexpr int kDisplayWidth = kBoardOnx2432g028 ? 240 : 240;
-constexpr int kDisplayHeight = kBoardOnx2432g028 ? 320 : 240;
+constexpr int kDisplayWidth = kBoardOnx3248g035 ? 320 : 240;
+constexpr int kDisplayHeight =
+    kBoardOnx3248g035 ? 480 : (kBoardOnx2432g028 ? 320 : 240);
 
 constexpr int kRadarViewportSize = kDisplayWidth < 240 ? kDisplayWidth : 240;
 constexpr int kRadarViewportX = (kDisplayWidth - kRadarViewportSize) / 2;
 constexpr int kRadarViewportY = (kDisplayHeight - kRadarViewportSize) / 2;
+constexpr bool kFrameSpriteUsePsram = kBoardOnx3248g035;
 
-constexpr uint32_t kDisplaySpiWriteHz =
-    kBoardOnx2432g028 ? 40000000 : 40000000;
-constexpr bool kDisplayInvert = kBoardOnx2432g028 ? false : true;
+constexpr uint32_t kDisplaySpiWriteHz = 40000000;
+constexpr bool kDisplayInvert = kBoardOnx ? false : true;
 constexpr bool kDisplayRgbOrder = true;
 constexpr uint8_t kDisplayRotation = 0;
 

@@ -7,7 +7,7 @@
 
 namespace {
 
-#if defined(BOARD_ONX2432G028)
+#if defined(BOARD_ONX2432G028) || defined(BOARD_ONX3248G035)
 
 constexpr uint8_t kPcf8574Addr = 0x38;
 constexpr int kPcfExioLcdRst = 6;
@@ -36,7 +36,7 @@ bool pcfSetOutput(int bit, bool high) {
   return pcfWrite(next);
 }
 
-void initOnx2432g028IoExpander() {
+void initOnxIoExpander() {
   if (s_pcf_ready) {
     return;
   }
@@ -67,7 +67,7 @@ void boardInitBeforeDisplay() {
     digitalWrite(config::kDisplayPinBl, LOW);
   }
 
-#if defined(BOARD_ONX2432G028)
-  initOnx2432g028IoExpander();
+#if defined(BOARD_ONX2432G028) || defined(BOARD_ONX3248G035)
+  initOnxIoExpander();
 #endif
 }

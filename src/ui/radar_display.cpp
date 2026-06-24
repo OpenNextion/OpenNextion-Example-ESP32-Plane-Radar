@@ -660,6 +660,7 @@ bool ensureFrameSprite() {
     return true;
   }
   s_frame.setColorDepth(16);
+  s_frame.setPsram(config::kFrameSpriteUsePsram);
   if (!s_frame.createSprite(config::kDisplayWidth, config::kDisplayHeight)) {
     Serial.println("radar: frame sprite alloc failed");
     return false;
