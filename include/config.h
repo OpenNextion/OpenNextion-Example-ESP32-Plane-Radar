@@ -57,10 +57,14 @@ constexpr int kDisplayWidth = kBoardOnx3248g035 ? 320 : 240;
 constexpr int kDisplayHeight =
     kBoardOnx3248g035 ? 480 : (kBoardOnx2432g028 ? 320 : 240);
 
-constexpr int kRadarViewportSize = kDisplayWidth < 240 ? kDisplayWidth : 240;
+constexpr int kRadarViewportSize =
+    kBoardOnx3248g035 ? kDisplayWidth : (kDisplayWidth < 240 ? kDisplayWidth : 240);
 constexpr int kRadarViewportX = (kDisplayWidth - kRadarViewportSize) / 2;
-constexpr int kRadarViewportY = (kDisplayHeight - kRadarViewportSize) / 2;
+constexpr int kRadarViewportY =
+    kBoardOnx ? 0 : (kDisplayHeight - kRadarViewportSize) / 2;
 constexpr bool kFrameSpriteUsePsram = kBoardOnx3248g035;
+constexpr bool kRadarInfoPanelEnabled = kBoardOnx;
+constexpr int kRadarInfoPanelY = kBoardOnx3248g035 ? 330 : 246;
 
 constexpr uint32_t kDisplaySpiWriteHz = 40000000;
 constexpr bool kDisplayInvert = kBoardOnx ? false : true;
