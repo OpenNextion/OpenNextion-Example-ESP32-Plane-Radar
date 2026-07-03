@@ -18,7 +18,7 @@
 #include "ui/radar_theme.h"
 #include "ui/runway_overlay.h"
 
-namespace fonts = lgfx::v1::fonts;
+namespace lgfx_fonts = lgfx::v1::fonts;
 
 namespace ui {
 namespace radar {
@@ -47,10 +47,10 @@ float s_cardinal_vlw_size = 0.56f;
 float s_scale_vlw_size = 0.50f;
 float s_tag_vlw_size = 0.56f;
 float s_info_vlw_size = 0.34f;
-const lgfx::GFXfont* s_cardinal_gfx = &fonts::FreeSansBold12pt7b;
-const lgfx::GFXfont* s_scale_gfx = &fonts::FreeSansBold9pt7b;
-const lgfx::GFXfont* s_tag_gfx = &fonts::FreeSansBold12pt7b;
-const lgfx::GFXfont* s_info_gfx = &fonts::FreeSansBold9pt7b;
+const lgfx::GFXfont* s_cardinal_gfx = &lgfx_fonts::FreeSansBold12pt7b;
+const lgfx::GFXfont* s_scale_gfx = &lgfx_fonts::FreeSansBold9pt7b;
+const lgfx::GFXfont* s_tag_gfx = &lgfx_fonts::FreeSansBold12pt7b;
+const lgfx::GFXfont* s_info_gfx = &lgfx_fonts::FreeSansBold9pt7b;
 
 bool s_tag_label_metrics_ready = false;
 bool s_info_metrics_ready = false;
@@ -63,7 +63,6 @@ int s_scale_label_h = 0;
 lgfx::LovyanGFX* s_draw = &tft;
 LGFX_Sprite s_frame(&tft);
 bool s_frame_ready = false;
-unsigned long s_last_adsb_update_ms = 0;
 
 class DrawScope {
  public:
@@ -133,16 +132,16 @@ void initLabelMetrics() {
     s_scale_use_vlw = true;
     s_scale_vlw_size = findVlwSizeForHeight(scale_target);
   } else {
-    const lgfx::GFXfont* cardinal_candidates[] = {&fonts::FreeSansBold12pt7b,
-                                                  &fonts::FreeSansBold9pt7b};
+    const lgfx::GFXfont* cardinal_candidates[] = {&lgfx_fonts::FreeSansBold12pt7b,
+                                                  &lgfx_fonts::FreeSansBold9pt7b};
     s_cardinal_gfx =
         pickGfxFontClosest(cardinal_target, cardinal_candidates, 2);
     s_cardinal_use_vlw = false;
 
     const int cardinal_h = measureGfxHeight(*s_cardinal_gfx);
     const int scale_target = cardinal_h - radar::kScaleBelowCardinalPx;
-    const lgfx::GFXfont* scale_candidates[] = {&fonts::FreeSansBold9pt7b,
-                                               &fonts::FreeSansBold12pt7b};
+    const lgfx::GFXfont* scale_candidates[] = {&lgfx_fonts::FreeSansBold9pt7b,
+                                               &lgfx_fonts::FreeSansBold12pt7b};
     s_scale_gfx = pickGfxFontClosest(scale_target, scale_candidates, 2);
     s_scale_use_vlw = false;
   }
@@ -175,8 +174,8 @@ void initTagLabelMetrics() {
     s_tag_use_vlw = true;
     s_tag_vlw_size = findVlwSizeForHeight(target);
   } else {
-    const lgfx::GFXfont* tag_candidates[] = {&fonts::FreeSansBold12pt7b,
-                                               &fonts::FreeSansBold9pt7b};
+    const lgfx::GFXfont* tag_candidates[] = {&lgfx_fonts::FreeSansBold12pt7b,
+                                               &lgfx_fonts::FreeSansBold9pt7b};
     s_tag_gfx = pickGfxFontClosest(target, tag_candidates, 2);
     s_tag_use_vlw = false;
   }
@@ -562,8 +561,8 @@ void initInfoMetrics() {
     s_info_use_vlw = true;
     s_info_vlw_size = findVlwSizeForHeight(13);
   } else {
-    const lgfx::GFXfont* info_candidates[] = {&fonts::FreeSansBold9pt7b,
-                                              &fonts::FreeSansBold12pt7b};
+    const lgfx::GFXfont* info_candidates[] = {&lgfx_fonts::FreeSansBold9pt7b,
+                                              &lgfx_fonts::FreeSansBold12pt7b};
     s_info_gfx = pickGfxFontClosest(13, info_candidates, 2);
     s_info_use_vlw = false;
   }
@@ -821,14 +820,21 @@ void drawInfoPanel() {
       aircraft->callsign[0] != '\0' ? aircraft->callsign : "unknown";
   const char* type = aircraft->type[0] != '\0' ? aircraft->type : "--";
   const char* alt = aircraft->alt[0] != '\0' ? aircraft->alt : "--";
-  char line[96];
-  snprintf(line, sizeof(line), "%s %s %s %s", ident, type, dist_label,
-           nearest[0].bearing);
-
   int cursor_x = text_x;
+  s_draw->setTextColor(radar::kColorLabel, radar::kColorBackground);
+  s_draw->drawString(ident, cursor_x, nearest_y);
+  cursor_x += s_draw->textWidth(ident) + 6;
+
+  s_draw->setTextColor(radar::kColorTagType, radar::kColorBackground);
+  s_draw->drawString(type, cursor_x, nearest_y);
+  cursor_x += s_draw->textWidth(type) + 6;
+
+  char line[32];
+  snprintf(line, sizeof(line), "%s %s", dist_label, nearest[0].bearing);
   s_draw->setTextColor(radar::kColorLabel, radar::kColorBackground);
   s_draw->drawString(line, cursor_x, nearest_y);
   cursor_x += s_draw->textWidth(line) + 6;
+
   s_draw->setTextColor(radar::kColorTagAltitude, radar::kColorBackground);
   s_draw->drawString(alt, cursor_x, nearest_y);
 }
@@ -996,7 +1002,6 @@ void radarDisplayDraw() {
 void radarDisplayRefreshAircraft() {
   s_last_adsb_update_ms = millis();
   initPalette();
-  s_last_adsb_update_ms = millis();
 
   if (ensureFrameSprite()) {
     renderFrame();
