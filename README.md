@@ -7,75 +7,29 @@
   <img src="docs/images/opennextion-esp32-plane-radar-demo.jpg" alt="OpenNextion ESP32 Plane Radar demo on OpenNextion display" width="820">
 </p>
 
-OpenNextion ESP32 Plane Radar is an OpenNextion board support fork of
-[ESP32 Plane Radar](https://github.com/MatixYo/ESP32-Plane-Radar). It adds
-ready-to-build PlatformIO firmware targets for OpenNextion ESP32-S3 rectangular
-display boards while keeping the original circular ADS-B radar UI and first-time
-Wi-Fi setup flow.
+OpenNextion ESP32 Plane Radar is a ready-to-flash desktop aircraft radar for
+OpenNextion ESP32-S3 rectangular displays. It is based on the excellent
+[ESP32 Plane Radar](https://github.com/MatixYo/ESP32-Plane-Radar) project and
+adds OpenNextion board support, portrait rectangular UI layouts, Wi-Fi setup,
+and release binaries for supported OpenNextion displays.
 
-This repository is intended to make ESP32 Plane Radar easier to build, flash,
-and validate on supported OpenNextion development boards while the upstream
-board support pull requests are under review.
+Use it to place a small ESP32 ADS-B radar display on your desk, configure your
+location through Wi-Fi setup, and watch nearby aircraft on a compact radar UI.
 
 ## Supported Displays
 
-The current public branch focuses on two OpenNextion portrait displays:
+The public `v0.1.0` release targets two OpenNextion portrait displays:
 
-| PlatformIO env | Display model | Size | Resolution | Orientation | Status |
+| Display model | Size | Resolution | Orientation | PlatformIO env | Status |
 | --- | --- | --- | --- | --- | --- |
-| `onx3248g035` | [ONX3248G035][onx3248g035] | 3.5 inch | 320 x 480 | Portrait | Verified |
-| `onx2432g028` | [ONX2432G028][onx2432g028] | 2.8 inch | 240 x 320 | Portrait | Verified |
+| [ONX3248G035][onx3248g035] | 3.5 inch | 320 x 480 | Portrait | `onx3248g035` | Verified |
+| [ONX2432G028][onx2432g028] | 2.8 inch | 240 x 320 | Portrait | `onx2432g028` | Verified |
 
-This fork is documented primarily for the OpenNextion boards. Upstream hardware
-targets are retained in the source tree for compatibility.
-
-Build-time board selection is explicit:
-
-```sh
-pio run -e onx3248g035
-pio run -e onx2432g028
-```
-
-Do not flash firmware built for one display model onto another display model.
-
-## Controls
-
-Plane Radar uses a single active-low BOOT button for device actions.
-
-| Action | Effect |
-| --- | --- |
-| Short tap | Cycle range preset: 5 -> 10 -> 15 -> 25 km; saved to flash |
-| Hold 3 s | Clear Wi-Fi, location, and units; reboot into setup portal |
-| Hold during setup / boot | Force credential reset and setup portal |
-
-BOOT is GPIO `0` on the OpenNextion ESP32-S3 targets.
-
-## Wi-Fi Setup Portal
-
-First-time setup starts a captive portal on the AP `PlaneRadar-Setup`.
-
-1. Connect to `PlaneRadar-Setup`.
-2. Open `http://plane-radar.local` or `http://192.168.4.1`.
-3. Set home Wi-Fi and save.
-
-After the device joins your LAN, the same portal remains available at
-`http://plane-radar.local` or the device IP address shown in the serial log. Use
-it to update Wi-Fi, radar location, units, and runway overlay settings.
-
-Custom fields stored in NVS:
-
-| Field | Purpose |
-| --- | --- |
-| Latitude / Longitude | Radar center and ADS-B query position |
-| Display distances in miles | Shows ring labels in miles instead of kilometers |
-| Show airport runways | Toggles the major-airport runway overlay |
-
-After a reset, the device reboots and shows the setup screen immediately instead
-of looping on stale credentials.
+Do not flash firmware built for one display model onto the other display model.
 
 ## Background
 
-I found an excellent plane radar project on GitHub called
+I found an excellent aircraft radar project on GitHub called
 [ESP32 Plane Radar](https://github.com/MatixYo/ESP32-Plane-Radar). The original
 project is mainly designed for a round display, but the displays I have on hand
 are rectangular OpenNextion ESP32 displays, so I decided to port Plane Radar to
@@ -104,62 +58,88 @@ MakerWorld project links:
 - 3.5 inch ONX3248G035 enclosure: link to be added
 - 2.8 inch ONX2432G028 enclosure: link to be added
 
+## What It Shows
+
+The radar UI keeps the original circular aircraft radar as the main visual
+focus and adapts it for portrait rectangular OpenNextion displays.
+
+- Nearby aircraft plotted around your configured latitude and longitude
+- Range rings with 5 km, 10 km, 15 km, and 25 km presets
+- Callsign, aircraft type, altitude, and heading indicators where available
+- Aircraft outside the active radar range shown as bearing dots near the rim
+- A compact information panel with range, aircraft count, update age, and nearest aircraft details
+- Optional major-airport runway overlay from embedded OurAirports data
+
+The 2.8 inch and 3.5 inch layouts are tuned separately so the radar remains the
+primary UI element on both display sizes.
+
+## Basic Usage
+
+### First-Time Wi-Fi Setup
+
+First-time setup starts a captive portal on the AP `PlaneRadar-Setup`.
+
+1. Connect your phone or computer to `PlaneRadar-Setup`.
+2. Open `http://plane-radar.local` or `http://192.168.4.1`.
+3. Enter your home Wi-Fi credentials.
+4. Enter your latitude and longitude for the radar center.
+5. Save and wait for the device to reboot into the radar screen.
+
+After the device joins your LAN, the same setup page remains available at
+`http://plane-radar.local` or the device IP address printed in the serial log.
+You can use it to update Wi-Fi, radar location, units, and runway overlay
+settings.
+
+### BOOT Button
+
+Plane Radar uses the BOOT button for quick device actions.
+
+| Action | Effect |
+| --- | --- |
+| Short tap | Cycle range preset: 5 -> 10 -> 15 -> 25 km; saved to flash |
+| Hold 3 s | Clear Wi-Fi, location, and units; reboot into setup portal |
+| Hold during setup / boot | Force credential reset and setup portal |
+
+BOOT is GPIO `0` on the OpenNextion ESP32-S3 targets.
+
+## Firmware Download and Flashing
+
+Download firmware from the GitHub Releases page. The `v0.1.0` release provides
+one merged full-flash binary per supported display model:
+
+| Display model | Orientation | Firmware file | Flash address |
+| --- | --- | --- | --- |
+| [ONX3248G035][onx3248g035] | Portrait | `opennextion-esp32-plane-radar-v0.1.0-onx3248g035.bin` | `0x0` |
+| [ONX2432G028][onx2432g028] | Portrait | `opennextion-esp32-plane-radar-v0.1.0-onx2432g028.bin` | `0x0` |
+
+Flash the matching merged binary at address `0x0`:
+
+```sh
+python -m esptool --chip esp32s3 -p /dev/cu.wchusbserial1110 -b 921600 write_flash \
+  0x0 ./opennextion-esp32-plane-radar-v0.1.0-onx3248g035.bin
+```
+
+Replace the serial port and firmware filename for your board.
+
+For this release, full firmware flashing is recommended. OTA firmware downloads
+are not provided unless the OTA flow is separately validated.
+
 ## Current Porting Work
 
-This version is based on ESP32 Plane Radar and adds OpenNextion multi-board
-support. The main changes are:
+This version is based on ESP32 Plane Radar and focuses on OpenNextion board
+support for the two verified displays.
 
-### 1. OpenNextion Board Support
+Main changes in this fork:
 
-OpenNextion ESP32 Plane Radar includes dedicated PlatformIO environments for:
-
-- [ONX3248G035][onx3248g035] 3.5 inch portrait display
-- [ONX2432G028][onx2432g028] 2.8 inch portrait display
-
-Each board has its own PlatformIO board JSON file and board macro:
-`BOARD_ONX3248G035` or `BOARD_ONX2432G028`.
-
-### 2. Display and Board Initialization
-
-The port adds the OpenNextion display initialization required by the supported
-boards:
-
-- ST7796U SPI TFT panel support for ONX3248G035
-- ST7789 SPI TFT panel support for ONX2432G028
-- PCF8574 IO expander support for LCD reset and SDCS release
-- Backlight GPIO setup
-- Board-specific LovyanGFX panel selection
-
-Board pin mapping is handled by the PlatformIO board target and `include/config.h`.
+- Dedicated PlatformIO board targets for ONX3248G035 and ONX2432G028
+- Board-specific LovyanGFX panel configuration for the supported displays
+- Portrait rectangular radar layouts for 3.5 inch and 2.8 inch screens
+- Compact bottom information panel for rectangular display space
+- BOOT button range switching and configuration reset behavior
+- Merged firmware generation for simple full flashing from address `0x0`
 
 Touch and SD card hardware are present on the OpenNextion boards, but this
 firmware does not use them yet.
-
-### 3. Rectangular Display UI Layout
-
-The original project uses a 240 x 240 circular radar. The OpenNextion boards use
-portrait rectangular screens, so the radar is kept at the top and an information
-panel is added below it.
-
-Current layout behavior:
-
-- ONX2432G028: 240 x 240 radar at the top, compact bottom info panel
-- ONX3248G035: larger 320 x 320 radar at the top, larger bottom info panel
-- Upstream compatibility target: keeps the original 240 x 240 radar UI
-
-The information panel shows range, aircraft count, update age, and nearest
-aircraft details where screen space allows.
-
-### 4. PSRAM Frame Sprite for 3.5 inch Display
-
-ONX3248G035 uses a 320 x 480 full-frame sprite. The frame sprite is allocated in
-PSRAM for this board to avoid allocation failure and display flicker.
-
-### 5. PlatformIO Build and Merge Targets
-
-The project includes PlatformIO environments for all supported targets and uses
-`pio run -t merge` or the helper script to generate a single merged binary for
-full flashing from address `0x0`.
 
 ## Current Validation Status
 
@@ -185,164 +165,18 @@ Legend: ✅ Verified / ⚠️ Partially verified or hardware-dependent / ⏳ Not
 | ONX3248G035 | ✅ Verified | ✅ Verified | ✅ Verified | ✅ Verified | ✅ Verified | ⏳ Not used | ⏳ Not used | 3.5 inch ST7796U display |
 | ONX2432G028 | ✅ Verified | ✅ Verified | ✅ Verified | ✅ Verified | ✅ Verified | ⏳ Not used | ⏳ Not used | 2.8 inch ST7789 display |
 
-## Radar Features
+## Documentation
 
-### Grid and Range
-
-- Dark blue background with green rings and crosshairs
-- White N / S / E / W labels and an east-side range label
-- Range presets: 5 km, 10 km, 15 km, and 25 km
-- Miles or kilometers can be selected in the setup portal
-
-Range presets are stored in NVS and configured in `include/ui/radar_range.h`.
-
-### Aircraft
-
-- Aircraft inside the outer ring use a red heading triangle
-- Magenta speed vectors show track direction
-- Callsign, type, and altitude tags are drawn near each aircraft
-- Aircraft outside the outer ring are shown as red bearing dots on the screen rim
-
-### Runways
-
-- Major airports are generated from OurAirports `large_airport` data
-- Open runway strips are shown in teal when enabled
-- The setup portal can enable or disable the runway overlay
-- Regenerate the embedded list with `python3 scripts/build_large_airports.py`
-
-### ADS-B Data
-
-- Data source: `https://opendata.adsb.fi/api/v3/`
-- Fetch radius is derived from the active radar range
-- Poll interval is controlled by `kAdsbFetchIntervalMs` in `include/config.h`
-- Ground aircraft are hidden by default with `kAdsbShowGroundAircraft`
-
-## Firmware Download and Flashing
-
-Download firmware from the GitHub Release page when release binaries are
-available. A merged binary is intended for full initial flashing from address
-`0x0`.
-
-Release files follow this naming pattern:
-
-```text
-opennextion-esp32-plane-radar-<version>-<target>.bin
-```
-
-| Target | Example firmware file | Flash address |
-| --- | --- | --- |
-| `onx3248g035` | `opennextion-esp32-plane-radar-v0.1.0-onx3248g035.bin` | `0x0` |
-| `onx2432g028` | `opennextion-esp32-plane-radar-v0.1.0-onx2432g028.bin` | `0x0` |
-
-Flash a merged binary with:
-
-```sh
-VERSION=v0.1.0
-python -m esptool --chip esp32s3 -p /dev/cu.wchusbserial1110 -b 921600 write_flash \
-  0x0 ./opennextion-esp32-plane-radar-${VERSION}-onx2432g028.bin
-```
-
-Replace `VERSION`, serial port, and firmware target name as needed for your
-board.
-
-For this project, full firmware flashing is recommended for first installation.
-OTA firmware downloads are not provided unless the OTA flow is separately
-validated.
-
-## Local Build, Flash and Monitor
-
-This project uses PlatformIO with the Arduino framework. The commands below are
-for OpenNextion boards.
-
-### Build
-
-```bash
-pio run -e onx2432g028
-pio run -e onx3248g035
-```
-
-### Clean and Rebuild
-
-```bash
-pio run -e onx2432g028 -t clean
-pio run -e onx3248g035 -t clean
-```
-
-For a deeper clean, remove the board-specific build and dependency directories:
-
-```bash
-rm -rf .pio/build/onx2432g028 .pio/libdeps/onx2432g028
-rm -rf .pio/build/onx3248g035 .pio/libdeps/onx3248g035
-```
-
-### Upload
-
-```bash
-pio run -e onx2432g028 -t upload --upload-port <PORT>
-pio run -e onx3248g035 -t upload --upload-port <PORT>
-```
-
-Example OpenNextion serial port on macOS:
-
-```bash
-pio run -e onx3248g035 -t upload --upload-port /dev/cu.wchusbserial1110
-```
-
-### Monitor Serial Log
-
-```bash
-pio device monitor -e <env> --port <PORT> --baud 115200
-```
-
-The firmware prints the LAN configuration URL after Wi-Fi connects, for example
-`http://plane-radar.local` or `http://<device-ip>`.
-
-### Generate a Single Merged Binary
-
-PlatformIO merge target:
-
-```bash
-pio run -e onx2432g028 -t merge
-pio run -e onx3248g035 -t merge
-```
-
-Outputs:
-
-```text
-.pio/build/<env>/firmware-merged.bin
-```
-
-Helper script:
-
-```bash
-VERSION=v0.1.0
-chmod +x scripts/merge-firmware.sh
-./scripts/merge-firmware.sh --env onx2432g028 -o release/opennextion-esp32-plane-radar-${VERSION}-onx2432g028.bin
-./scripts/merge-firmware.sh --env onx3248g035 -o release/opennextion-esp32-plane-radar-${VERSION}-onx3248g035.bin
-```
-
-Skip rebuild if firmware is already built:
-
-```bash
-VERSION=v0.1.0
-./scripts/merge-firmware.sh --env onx3248g035 --no-build -o release/opennextion-esp32-plane-radar-${VERSION}-onx3248g035.bin
-```
-
-## Dependencies
-
-- [LovyanGFX](https://github.com/lovyan03/LovyanGFX)
-- [WiFiManager](https://github.com/tzapu/WiFiManager)
-- [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
-- [adsb.fi Open Data API](https://opendata.adsb.fi/)
+- [Build, Flash, and Merge Firmware](docs/BUILD_AND_FLASH.md)
 
 ## Roadmap
 
 Planned next steps:
 
 - Keep this OpenNextion fork aligned with upstream ESP32 Plane Radar where practical
-- Publish convenient merged firmware binaries in GitHub Releases
 - Add enclosure links when OpenNextion printable cases are ready
 - Continue validating display, Wi-Fi, ADS-B, and UI behavior on supported hardware
+- Evaluate future use of the onboard touch and SD card hardware
 
 ## Credits
 

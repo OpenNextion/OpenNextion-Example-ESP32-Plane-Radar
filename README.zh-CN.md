@@ -7,61 +7,20 @@
   <img src="docs/images/opennextion-esp32-plane-radar-demo.jpg" alt="OpenNextion ESP32 Plane Radar 在 OpenNextion 显示屏上的运行效果" width="820">
 </p>
 
-OpenNextion ESP32 Plane Radar 是 [ESP32 Plane Radar](https://github.com/MatixYo/ESP32-Plane-Radar) 的 OpenNextion 开发板适配分支。它为 OpenNextion ESP32-S3 矩形屏开发板增加了可直接构建的 PlatformIO 固件目标，同时保留原项目的圆形 ADS-B 雷达 UI 和首次 Wi-Fi 配网流程。
+OpenNextion ESP32 Plane Radar 是一个面向 OpenNextion ESP32-S3 矩形屏的桌面飞机雷达固件，可以直接刷写使用。它基于优秀的 [ESP32 Plane Radar](https://github.com/MatixYo/ESP32-Plane-Radar) 项目，并增加了 OpenNextion 开发板支持、竖屏矩形 UI 布局、Wi-Fi 配网流程，以及已支持 OpenNextion 显示屏的 release 固件。
 
-这个仓库的目标，是让 ESP32 Plane Radar 可以更容易地在已支持的 OpenNextion 开发板上构建、刷写和验证，同时等待上游板级支持 PR 审核。
+你可以把它作为一个小型 ESP32 ADS-B 雷达显示器放在桌面上，通过 Wi-Fi 配网页面设置自己的位置，然后在紧凑的雷达 UI 上查看附近飞机。
 
 ## 支持的显示屏
 
-当前公开分支重点支持两款 OpenNextion 竖屏显示屏：
+公开的 `v0.1.0` release 支持两款 OpenNextion 竖屏显示屏：
 
-| PlatformIO env | 显示屏型号 | 尺寸 | 分辨率 | 方向 | 状态 |
+| 显示屏型号 | 尺寸 | 分辨率 | 方向 | PlatformIO env | 状态 |
 | --- | --- | --- | --- | --- | --- |
-| `onx3248g035` | [ONX3248G035][onx3248g035] | 3.5 英寸 | 320 x 480 | 竖屏 | 已验证 |
-| `onx2432g028` | [ONX2432G028][onx2432g028] | 2.8 英寸 | 240 x 320 | 竖屏 | 已验证 |
-
-本文档主要面向 OpenNextion 开发板。源码中仍保留上游硬件目标，以保持兼容性。
-
-构建时需要明确指定开发板目标：
-
-```sh
-pio run -e onx3248g035
-pio run -e onx2432g028
-```
+| [ONX3248G035][onx3248g035] | 3.5 英寸 | 320 x 480 | 竖屏 | `onx3248g035` | 已验证 |
+| [ONX2432G028][onx2432g028] | 2.8 英寸 | 240 x 320 | 竖屏 | `onx2432g028` | 已验证 |
 
 请不要把为某一款显示屏构建的固件刷写到另一款显示屏上。
-
-## 按键控制
-
-Plane Radar 使用一个低电平有效的 BOOT 按键执行设备操作。
-
-| 操作 | 效果 |
-| --- | --- |
-| 短按 | 切换量程：5 -> 10 -> 15 -> 25 km，并保存到 flash |
-| 长按 3 秒 | 清除 Wi-Fi、位置和单位设置；重启进入配网页面 |
-| 配网 / 启动时长按 | 强制清除凭据并进入配网页面 |
-
-在 OpenNextion ESP32-S3 目标上，BOOT 按键使用 GPIO `0`。
-
-## Wi-Fi 配网页面
-
-首次启动会创建名为 `PlaneRadar-Setup` 的 AP 并打开配网页面。
-
-1. 连接到 `PlaneRadar-Setup`。
-2. 打开 `http://plane-radar.local` 或 `http://192.168.4.1`。
-3. 设置家庭 Wi-Fi 并保存。
-
-设备加入局域网后，同一个配置页面仍可通过 `http://plane-radar.local` 或串口日志中显示的设备 IP 地址访问。你可以在这里更新 Wi-Fi、雷达位置、单位和跑道叠加显示设置。
-
-存储在 NVS 中的自定义字段：
-
-| 字段 | 用途 |
-| --- | --- |
-| Latitude / Longitude | 雷达中心点和 ADS-B 查询位置 |
-| Display distances in miles | 使用英里显示距离环标签 |
-| Show airport runways | 开关主要机场跑道叠加层 |
-
-重置后，设备会立即重启并显示配网页面，避免反复尝试失效的旧凭据。
 
 ## 背景
 
@@ -82,52 +41,79 @@ MakerWorld 项目链接：
 - 3.5 英寸 ONX3248G035 外壳：待补充
 - 2.8 英寸 ONX2432G028 外壳：待补充
 
+## 显示内容
+
+雷达 UI 保留原项目的圆形飞机雷达作为主要视觉元素，并适配到 OpenNextion 竖向矩形显示屏上。
+
+- 围绕你配置的经纬度显示附近飞机
+- 支持 5 km、10 km、15 km 和 25 km 量程预设
+- 在数据可用时显示航班号、机型、高度和航向指示
+- 超出当前雷达范围的飞机会以方位点显示在雷达外圈附近
+- 底部紧凑信息面板显示量程、飞机数量、更新时间和最近飞机信息
+- 可选显示来自嵌入 OurAirports 数据的主要机场跑道叠加层
+
+2.8 英寸和 3.5 英寸布局分别进行了调整，使雷达在两种尺寸上都保持为主要 UI 元素。
+
+## 基础使用
+
+### 首次 Wi-Fi 配网
+
+首次启动会创建名为 `PlaneRadar-Setup` 的 AP 并打开配网页面。
+
+1. 使用手机或电脑连接到 `PlaneRadar-Setup`。
+2. 打开 `http://plane-radar.local` 或 `http://192.168.4.1`。
+3. 输入你的家庭 Wi-Fi 信息。
+4. 输入用于雷达中心点的纬度和经度。
+5. 保存并等待设备重启进入雷达界面。
+
+设备加入局域网后，同一个配置页面仍可通过 `http://plane-radar.local` 或串口日志中显示的设备 IP 地址访问。你可以在这里更新 Wi-Fi、雷达位置、单位和跑道叠加显示设置。
+
+### BOOT 按键
+
+Plane Radar 使用 BOOT 按键执行快捷操作。
+
+| 操作 | 效果 |
+| --- | --- |
+| 短按 | 切换量程预设：5 -> 10 -> 15 -> 25 km，并保存到 flash |
+| 长按 3 秒 | 清除 Wi-Fi、位置和单位设置；重启进入配网页面 |
+| 配网 / 启动时长按 | 强制清除凭据并进入配网页面 |
+
+在 OpenNextion ESP32-S3 目标上，BOOT 按键使用 GPIO `0`。
+
+## 固件下载和刷写
+
+请从 GitHub Releases 页面下载固件。`v0.1.0` release 为每款已支持显示屏提供一个合并后的完整刷写固件：
+
+| 显示屏型号 | 方向 | 固件文件 | 刷写地址 |
+| --- | --- | --- | --- |
+| [ONX3248G035][onx3248g035] | 竖屏 | `opennextion-esp32-plane-radar-v0.1.0-onx3248g035.bin` | `0x0` |
+| [ONX2432G028][onx2432g028] | 竖屏 | `opennextion-esp32-plane-radar-v0.1.0-onx2432g028.bin` | `0x0` |
+
+将匹配的合并固件刷写到地址 `0x0`：
+
+```sh
+python -m esptool --chip esp32s3 -p /dev/cu.wchusbserial1110 -b 921600 write_flash \
+  0x0 ./opennextion-esp32-plane-radar-v0.1.0-onx3248g035.bin
+```
+
+请根据你的开发板替换串口和固件文件名。
+
+对于这个 release，推荐使用完整固件刷写。除非 OTA 流程单独验证，否则不提供 OTA 固件下载。
+
 ## 当前移植工作
 
-这个版本基于 ESP32 Plane Radar，并增加 OpenNextion 多开发板支持。主要改动包括：
+这个版本基于 ESP32 Plane Radar，重点为两款已验证 OpenNextion 显示屏提供板级支持。
 
-### 1. OpenNextion 开发板支持
+这个分支的主要改动：
 
-OpenNextion ESP32 Plane Radar 为以下开发板提供独立 PlatformIO 环境：
-
-- [ONX3248G035][onx3248g035] 3.5 英寸竖屏显示屏
-- [ONX2432G028][onx2432g028] 2.8 英寸竖屏显示屏
-
-每个开发板都有自己的 PlatformIO board JSON 文件和板级宏：`BOARD_ONX3248G035` 或 `BOARD_ONX2432G028`。
-
-### 2. 显示屏和板级初始化
-
-本移植增加了已支持开发板所需的 OpenNextion 显示初始化：
-
-- ONX3248G035 的 ST7796U SPI TFT 面板支持
-- ONX2432G028 的 ST7789 SPI TFT 面板支持
-- 用于 LCD reset 和释放 SDCS 的 PCF8574 IO 扩展器支持
-- 背光 GPIO 设置
-- 板级 LovyanGFX 面板选择
-
-板级引脚映射由 PlatformIO board 目标和 `include/config.h` 处理。
+- 为 ONX3248G035 和 ONX2432G028 提供独立 PlatformIO board 目标
+- 为已支持显示屏提供板级 LovyanGFX 面板配置
+- 为 3.5 英寸和 2.8 英寸屏幕提供竖屏矩形雷达布局
+- 为矩形屏空间增加底部紧凑信息面板
+- 支持 BOOT 按键切换量程和重置配置
+- 生成可从地址 `0x0` 简单完整刷写的合并固件
 
 OpenNextion 开发板带有触摸和 SD 卡硬件，但当前固件尚未使用它们。
-
-### 3. 矩形屏 UI 布局
-
-原项目使用 240 x 240 圆形雷达。OpenNextion 开发板使用竖向矩形屏，所以雷达保留在屏幕上方，并在下方增加信息面板。
-
-当前布局行为：
-
-- ONX2432G028：顶部 240 x 240 雷达，下方紧凑信息面板
-- ONX3248G035：顶部更大的 320 x 320 雷达，下方更大的信息面板
-- 上游兼容目标：保持原始 240 x 240 雷达 UI
-
-信息面板会根据屏幕空间显示量程、飞机数量、更新时间和最近飞机信息。
-
-### 4. 3.5 英寸显示屏的 PSRAM Frame Sprite
-
-ONX3248G035 使用 320 x 480 全屏 frame sprite。该开发板会把 frame sprite 分配到 PSRAM，以避免内存分配失败和屏幕闪烁。
-
-### 5. PlatformIO 构建和合并目标
-
-项目包含所有支持目标的 PlatformIO 环境，并使用 `pio run -t merge` 或辅助脚本生成可从地址 `0x0` 完整刷写的单个合并固件。
 
 ## 当前验证状态
 
@@ -153,157 +139,18 @@ ONX3248G035 使用 320 x 480 全屏 frame sprite。该开发板会把 frame spri
 | ONX3248G035 | ✅ 已验证 | ✅ 已验证 | ✅ 已验证 | ✅ 已验证 | ✅ 已验证 | ⏳ 未使用 | ⏳ 未使用 | 3.5 英寸 ST7796U 显示屏 |
 | ONX2432G028 | ✅ 已验证 | ✅ 已验证 | ✅ 已验证 | ✅ 已验证 | ✅ 已验证 | ⏳ 未使用 | ⏳ 未使用 | 2.8 英寸 ST7789 显示屏 |
 
-## 雷达功能
+## 文档
 
-### 网格和量程
-
-- 深蓝背景，绿色距离环和十字线
-- 白色 N / S / E / W 方位标签，以及东侧量程标签
-- 量程预设：5 km、10 km、15 km、25 km
-- 可以在配网页面选择英里或公里
-
-量程预设存储在 NVS 中，并在 `include/ui/radar_range.h` 中配置。
-
-### 飞机
-
-- 外圈内的飞机使用红色航向三角形显示
-- 紫色速度向量显示航迹方向
-- 每架飞机旁边显示呼号、机型和高度标签
-- 外圈外的飞机以红色方位点显示在屏幕边缘
-
-### 跑道
-
-- 主要机场数据由 OurAirports 的 `large_airport` 数据生成
-- 启用后，开放跑道以青绿色显示
-- 配网页面可启用或关闭跑道叠加层
-- 可使用 `python3 scripts/build_large_airports.py` 重新生成嵌入列表
-
-### ADS-B 数据
-
-- 数据源：`https://opendata.adsb.fi/api/v3/`
-- 请求半径由当前雷达量程决定
-- 轮询间隔由 `include/config.h` 中的 `kAdsbFetchIntervalMs` 控制
-- 默认通过 `kAdsbShowGroundAircraft` 隐藏地面飞机
-
-## 固件下载和刷写
-
-当 release 固件可用时，请从 GitHub Release 页面下载。合并固件适合从地址 `0x0` 进行完整首次刷写。
-
-Release 文件遵循以下命名规则：
-
-```text
-opennextion-esp32-plane-radar-<version>-<target>.bin
-```
-
-| Target | 示例固件文件 | 刷写地址 |
-| --- | --- | --- |
-| `onx3248g035` | `opennextion-esp32-plane-radar-v0.1.0-onx3248g035.bin` | `0x0` |
-| `onx2432g028` | `opennextion-esp32-plane-radar-v0.1.0-onx2432g028.bin` | `0x0` |
-
-刷写合并固件：
-
-```sh
-VERSION=v0.1.0
-python -m esptool --chip esp32s3 -p /dev/cu.wchusbserial1110 -b 921600 write_flash \
-  0x0 ./opennextion-esp32-plane-radar-${VERSION}-onx2432g028.bin
-```
-
-请根据你的开发板替换 `VERSION`、串口和固件目标名称。
-
-对于本项目，首次安装推荐使用完整固件刷写。除非 OTA 流程单独验证，否则不提供 OTA 固件下载。
-
-## 本地构建、刷写和串口监视
-
-本项目使用 PlatformIO 和 Arduino framework。下面的命令面向 OpenNextion 开发板。
-
-### 构建
-
-```bash
-pio run -e onx2432g028
-pio run -e onx3248g035
-```
-
-### 清理并重新构建
-
-```bash
-pio run -e onx2432g028 -t clean
-pio run -e onx3248g035 -t clean
-```
-
-更深度清理时，可以删除指定开发板的构建和依赖目录：
-
-```bash
-rm -rf .pio/build/onx2432g028 .pio/libdeps/onx2432g028
-rm -rf .pio/build/onx3248g035 .pio/libdeps/onx3248g035
-```
-
-### 上传
-
-```bash
-pio run -e onx2432g028 -t upload --upload-port <PORT>
-pio run -e onx3248g035 -t upload --upload-port <PORT>
-```
-
-macOS 上 OpenNextion 常见串口示例：
-
-```bash
-pio run -e onx3248g035 -t upload --upload-port /dev/cu.wchusbserial1110
-```
-
-### 查看串口日志
-
-```bash
-pio device monitor -e <env> --port <PORT> --baud 115200
-```
-
-固件连接 Wi-Fi 后会打印局域网配置 URL，例如 `http://plane-radar.local` 或 `http://<device-ip>`。
-
-### 生成单个合并固件
-
-PlatformIO merge 目标：
-
-```bash
-pio run -e onx2432g028 -t merge
-pio run -e onx3248g035 -t merge
-```
-
-输出文件：
-
-```text
-.pio/build/<env>/firmware-merged.bin
-```
-
-辅助脚本：
-
-```bash
-VERSION=v0.1.0
-chmod +x scripts/merge-firmware.sh
-./scripts/merge-firmware.sh --env onx2432g028 -o release/opennextion-esp32-plane-radar-${VERSION}-onx2432g028.bin
-./scripts/merge-firmware.sh --env onx3248g035 -o release/opennextion-esp32-plane-radar-${VERSION}-onx3248g035.bin
-```
-
-如果固件已经构建完成，可以跳过重新构建：
-
-```bash
-VERSION=v0.1.0
-./scripts/merge-firmware.sh --env onx3248g035 --no-build -o release/opennextion-esp32-plane-radar-${VERSION}-onx3248g035.bin
-```
-
-## 依赖
-
-- [LovyanGFX](https://github.com/lovyan03/LovyanGFX)
-- [WiFiManager](https://github.com/tzapu/WiFiManager)
-- [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
-- [adsb.fi Open Data API](https://opendata.adsb.fi/)
+- [构建、刷写和合并固件](docs/BUILD_AND_FLASH.md)
 
 ## 路线图
 
 后续计划：
 
 - 在可行情况下，让这个 OpenNextion 分支持续跟进上游 ESP32 Plane Radar
-- 在 GitHub Releases 中发布方便刷写的合并固件
 - OpenNextion 可打印外壳准备好后补充链接
 - 继续在已支持硬件上验证显示、Wi-Fi、ADS-B 和 UI 行为
+- 评估未来是否使用板载触摸和 SD 卡硬件
 
 ## 致谢
 
