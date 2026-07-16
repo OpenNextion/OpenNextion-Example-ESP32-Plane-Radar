@@ -1,6 +1,7 @@
 # OpenNextion ESP32 Plane Radar
 
 [![English](https://img.shields.io/badge/lang-English-blue)](./README.md)
+[![中文](https://img.shields.io/badge/lang-中文-red)](./README.zh-CN.md)
 
 <p align="center">
   <img src="docs/images/opennextion-esp32-plane-radar-demo.jpg" alt="OpenNextion ESP32 Plane Radar demo on OpenNextion display" width="820">
