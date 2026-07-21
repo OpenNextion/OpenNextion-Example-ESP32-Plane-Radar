@@ -17,11 +17,23 @@ pio run -e onx2432g028
 pio run -e onx3248g035
 ```
 
-## Clean and Rebuild
+## Clean Build Artifacts
+
+The `clean` target only removes build artifacts. It does not rebuild firmware.
 
 ```bash
 pio run -e onx2432g028 -t clean
 pio run -e onx3248g035 -t clean
+```
+
+To clean and then rebuild, run the build command after `clean`:
+
+```bash
+pio run -e onx2432g028 -t clean
+pio run -e onx2432g028
+
+pio run -e onx3248g035 -t clean
+pio run -e onx3248g035
 ```
 
 For a deeper clean, remove the board-specific build and dependency directories:
