@@ -165,7 +165,7 @@ firmware does not use them yet.
 ### Display Validation
 
 <p align="center">
-  <img src="docs/images/opennextion-esp32-plane-radar-validation.jpg" alt="OpenNextion ESP32 Plane Radar validation on OpenNextion display" width="720">
+  <img src="docs/images/devices-all-three.jpg" alt="OpenNextion ESP32 Plane Radar validation on OpenNextion display" width="720">
 </p>
 
 - ONX3248G035 has been validated on real hardware
