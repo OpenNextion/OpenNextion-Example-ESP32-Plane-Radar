@@ -9,12 +9,14 @@ for the supported OpenNextion ESP32-S3 boards.
 | --- | --- | --- | --- |
 | `onx3248g035` | ONX3248G035 | 320 x 480 | Portrait |
 | `onx2432g028` | ONX2432G028 | 240 x 320 | Portrait |
+| `onx2424g013` | ONX2424G013 | 240 x 240 | Round |
 
 ## Build
 
 ```bash
 pio run -e onx2432g028
 pio run -e onx3248g035
+pio run -e onx2424g013
 ```
 
 ## Clean Build Artifacts
@@ -24,6 +26,7 @@ The `clean` target only removes build artifacts. It does not rebuild firmware.
 ```bash
 pio run -e onx2432g028 -t clean
 pio run -e onx3248g035 -t clean
+pio run -e onx2424g013 -t clean
 ```
 
 To clean and then rebuild, run the build command after `clean`:
@@ -34,6 +37,9 @@ pio run -e onx2432g028
 
 pio run -e onx3248g035 -t clean
 pio run -e onx3248g035
+
+pio run -e onx2424g013 -t clean
+pio run -e onx2424g013
 ```
 
 For a deeper clean, remove the board-specific build and dependency directories:
@@ -41,6 +47,7 @@ For a deeper clean, remove the board-specific build and dependency directories:
 ```bash
 rm -rf .pio/build/onx2432g028 .pio/libdeps/onx2432g028
 rm -rf .pio/build/onx3248g035 .pio/libdeps/onx3248g035
+rm -rf .pio/build/onx2424g013 .pio/libdeps/onx2424g013
 ```
 
 ## Upload from PlatformIO
@@ -55,6 +62,24 @@ Example OpenNextion serial port on macOS:
 ```bash
 pio run -e onx3248g035 -t upload --upload-port /dev/cu.wchusbserial1110
 ```
+
+### ONX2424G013 Manual Flash
+
+ONX2424G013 uses ESP32-S3 built-in USB-OTG with no external UART bridge chip.
+Because the firmware holds the USB-CDC port, esptool cannot automatically reset the
+chip into download mode. A manual procedure is required:
+
+1. **Hold BOOT** (GPIO0 button on the back of the board)
+2. **Press and release RST (EN)** once
+3. **Release BOOT**
+4. **Immediately run:**
+
+```bash
+pio run -e onx2424g013 -t upload --upload-port <PORT>
+```
+
+This step is only needed for ONX2424G013. The rectangular displays (ONX3248G035,
+ONX2432G028) use external USB-UART chips and support one-click upload.
 
 ## Monitor Serial Log
 
@@ -72,6 +97,7 @@ PlatformIO merge target:
 ```bash
 pio run -e onx2432g028 -t merge
 pio run -e onx3248g035 -t merge
+pio run -e onx2424g013 -t merge
 ```
 
 Outputs:
@@ -87,6 +113,7 @@ VERSION=v0.1.0
 chmod +x scripts/merge-firmware.sh
 ./scripts/merge-firmware.sh --env onx2432g028 -o release/opennextion-esp32-plane-radar-${VERSION}-onx2432g028.bin
 ./scripts/merge-firmware.sh --env onx3248g035 -o release/opennextion-esp32-plane-radar-${VERSION}-onx3248g035.bin
+./scripts/merge-firmware.sh --env onx2424g013 -o release/opennextion-esp32-plane-radar-${VERSION}-onx2424g013.bin
 ```
 
 Skip rebuild if firmware is already built:
@@ -94,6 +121,7 @@ Skip rebuild if firmware is already built:
 ```bash
 VERSION=v0.1.0
 ./scripts/merge-firmware.sh --env onx3248g035 --no-build -o release/opennextion-esp32-plane-radar-${VERSION}-onx3248g035.bin
+./scripts/merge-firmware.sh --env onx2424g013 --no-build -o release/opennextion-esp32-plane-radar-${VERSION}-onx2424g013.bin
 ```
 
 ## Flash a Merged Release Binary
@@ -103,6 +131,14 @@ Merged release binaries should be flashed at address `0x0`:
 ```bash
 python -m esptool --chip esp32s3 -p <PORT> -b 921600 write_flash \
   0x0 ./opennextion-esp32-plane-radar-v0.1.0-onx3248g035.bin
+```
+
+For ONX2424G013, manually enter download mode first (hold BOOT, press RST,
+release BOOT), then flash:
+
+```bash
+python -m esptool --chip esp32s3 -p <PORT> -b 921600 write_flash \
+  0x0 ./opennextion-esp32-plane-radar-v0.1.0-onx2424g013.bin
 ```
 
 Replace `<PORT>` and the firmware filename for your board.
