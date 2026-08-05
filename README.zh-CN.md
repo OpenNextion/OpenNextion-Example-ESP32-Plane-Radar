@@ -7,24 +7,25 @@
   <img src="docs/images/opennextion-esp32-plane-radar-demo.jpg" alt="OpenNextion ESP32 Plane Radar 在 OpenNextion 显示屏上的运行效果" width="820">
 </p>
 
-OpenNextion ESP32 Plane Radar 是一个面向 OpenNextion ESP32-S3 矩形屏的桌面飞机雷达固件，可以直接刷写使用。它基于优秀的 [ESP32 Plane Radar](https://github.com/MatixYo/ESP32-Plane-Radar) 项目，并增加了 OpenNextion 开发板支持、竖屏矩形 UI 布局、Wi-Fi 配网流程，以及已支持 OpenNextion 显示屏的 release 固件。
+OpenNextion ESP32 Plane Radar 是一个面向 OpenNextion ESP32-S3 显示屏（矩形屏和圆形屏）的桌面飞机雷达固件，可以直接刷写使用。它基于优秀的 [ESP32 Plane Radar](https://github.com/MatixYo/ESP32-Plane-Radar) 项目，并增加了 OpenNextion 开发板支持、屏幕适配的 UI 布局、Wi-Fi 配网流程，以及已支持 OpenNextion 显示屏的 release 固件。
 
 你可以把它作为一个小型 ESP32 ADS-B 雷达显示器放在桌面上，通过 Wi-Fi 配网页面设置自己的位置，然后在紧凑的雷达 UI 上查看附近飞机。
 
 ## 支持的显示屏
 
-公开的 `v0.1.0` release 支持两款 OpenNextion 竖屏显示屏：
+公开的 `v0.1.0` release 支持三款 OpenNextion 显示屏：
 
-| 显示屏型号 | 尺寸 | 分辨率 | 方向 | PlatformIO env | 状态 |
-| --- | --- | --- | --- | --- | --- |
-| [ONX3248G035][onx3248g035] | 3.5 英寸 | 320 x 480 | 竖屏 | `onx3248g035` | 已验证 |
-| [ONX2432G028][onx2432g028] | 2.8 英寸 | 240 x 320 | 竖屏 | `onx2432g028` | 已验证 |
+| 显示屏型号 | 尺寸 | 分辨率 | 形状 | 方向 | PlatformIO env | 状态 |
+| --- | --- | --- | --- | --- | --- | --- |
+| [ONX3248G035][onx3248g035] | 3.5 英寸 | 320 x 480 | 矩形 | 竖屏 | `onx3248g035` | 已验证 |
+| [ONX2432G028][onx2432g028] | 2.8 英寸 | 240 x 320 | 矩形 | 竖屏 | `onx2432g028` | 已验证 |
+| [ONX2424G013][onx2424g013] | 1.28 英寸 | 240 x 240 | 圆形 | — | `onx2424g013` | 已验证 |
 
 请不要把为某一款显示屏构建的固件刷写到另一款显示屏上。
 
 ## 背景
 
-我发现了一个很优秀的飞机雷达项目：[ESP32 Plane Radar](https://github.com/MatixYo/ESP32-Plane-Radar)。原项目主要面向圆形屏幕设计，但我手上只有几块矩形的 OpenNextion ESP32 显示屏，所以决定把 Plane Radar 移植到这些矩形屏幕上。
+我发现了一个很优秀的飞机雷达项目：[ESP32 Plane Radar](https://github.com/MatixYo/ESP32-Plane-Radar)。原项目主要面向圆形屏幕设计，因此 1.28 英寸的 ONX2424G013 圆形屏天然适配。同时，我也把雷达 UI 移植到了手头的 OpenNextion 矩形屏幕上，针对竖屏做了布局适配。
 
 OpenNextion 开发板使用 ESP32-S3 作为主控制器，并为 DIY 项目提供了实用的硬件资源，包括原理图、板级文件，以及用于外壳或支架设计的机械参考文件。
 
@@ -35,6 +36,8 @@ OpenNextion 开发板使用 ESP32-S3 作为主控制器，并为 DIY 项目提�
 我也为已支持的 OpenNextion 显示屏尺寸设计了简单的 3D 打印外壳，并计划发布到 MakerWorld。需要的人可以免费下载和打印。
 
 每个外壳都是为对应 OpenNextion 显示屏准备的简易桌面外壳。撕下显示屏边缘的胶带，将显示屏压入打印外壳中，并用边缘胶固定到位。
+
+ONX2424G013 圆形屏自带旋钮形态，无需额外 3D 打印外壳。
 
 MakerWorld 项目链接：
 
@@ -70,7 +73,7 @@ MakerWorld 项目链接：
 
 ### BOOT 按键
 
-Plane Radar 使用 BOOT 按键执行快捷操作。
+Plane Radar 使用 BOOT 按键执行快捷操作。在圆形屏 ONX2424G013 上，**旋钮编码器也可以按压**——按压效果与 BOOT 按键完全相同，无需触碰 PCB 即可在前面板完成所有操作。
 
 | 操作 | 效果 |
 | --- | --- |
@@ -78,16 +81,17 @@ Plane Radar 使用 BOOT 按键执行快捷操作。
 | 长按 3 秒 | 清除 Wi-Fi、位置和单位设置；重启进入配网页面 |
 | 配网 / 启动时长按 | 强制清除凭据并进入配网页面 |
 
-在 OpenNextion ESP32-S3 目标上，BOOT 按键使用 GPIO `0`。
+在所有 OpenNextion ESP32-S3 目标上，BOOT 按键使用 GPIO `0`。ONX2424G013 的旋钮按压（KEY）使用 GPIO `9`。
 
 ## 固件下载和刷写
 
 请从 GitHub Releases 页面下载固件。`v0.1.0` release 为每款已支持显示屏提供一个合并后的完整刷写固件：
 
-| 显示屏型号 | 方向 | 固件文件 | 刷写地址 |
+| 显示屏型号 | 形状 | 固件文件 | 刷写地址 |
 | --- | --- | --- | --- |
-| [ONX3248G035][onx3248g035] | 竖屏 | `opennextion-esp32-plane-radar-v0.1.0-onx3248g035.bin` | `0x0` |
-| [ONX2432G028][onx2432g028] | 竖屏 | `opennextion-esp32-plane-radar-v0.1.0-onx2432g028.bin` | `0x0` |
+| [ONX3248G035][onx3248g035] | 矩形 | `opennextion-esp32-plane-radar-v0.1.0-onx3248g035.bin` | `0x0` |
+| [ONX2432G028][onx2432g028] | 矩形 | `opennextion-esp32-plane-radar-v0.1.0-onx2432g028.bin` | `0x0` |
+| [ONX2424G013][onx2424g013] | 圆形 | `opennextion-esp32-plane-radar-v0.1.0-onx2424g013.bin` | `0x0` |
 
 将匹配的合并固件刷写到地址 `0x0`：
 
@@ -98,19 +102,23 @@ python -m esptool --chip esp32s3 -p /dev/cu.wchusbserial1110 -b 921600 write_fla
 
 请根据你的开发板替换串口和固件文件名。
 
+> **ONX2424G013 刷写注意**：圆形屏使用 ESP32-S3 内置 USB（无外部 UART 桥接芯片）。进入烧录模式需按住 **BOOT**（GPIO0），按一下 **RST** 后松开，再松开 **BOOT**，然后执行刷写命令。详见[构建与刷写指南](docs/BUILD_AND_FLASH.md)。
+
 对于这个 release，推荐使用完整固件刷写。除非 OTA 流程单独验证，否则不提供 OTA 固件下载。
 
 ## 当前移植工作
 
-这个版本基于 ESP32 Plane Radar，重点为两款已验证 OpenNextion 显示屏提供板级支持。
+这个版本基于 ESP32 Plane Radar，重点为三款已验证 OpenNextion 显示屏提供板级支持。
 
 这个分支的主要改动：
 
-- 为 ONX3248G035 和 ONX2432G028 提供独立 PlatformIO board 目标
+- 为 ONX3248G035、ONX2432G028 和 ONX2424G013 提供独立 PlatformIO board 目标
 - 为已支持显示屏提供板级 LovyanGFX 面板配置
 - 为 3.5 英寸和 2.8 英寸屏幕提供竖屏矩形雷达布局
+- 为 1.28 英寸圆形屏（ONX2424G013）提供圆形雷达 UI
 - 为矩形屏空间增加底部紧凑信息面板
 - 支持 BOOT 按键切换量程和重置配置
+- ONX2424G013 旋钮按压（KEY）作为辅助控制键
 - 生成可从地址 `0x0` 简单完整刷写的合并固件
 
 OpenNextion 开发板带有触摸和 SD 卡硬件，但当前固件尚未使用它们。
@@ -125,9 +133,11 @@ OpenNextion 开发板带有触摸和 SD 卡硬件，但当前固件尚未使用�
 
 - ONX3248G035 已在真实硬件上验证
 - ONX2432G028 已在真实硬件上验证
-- Wi-Fi 配网流程已在 OpenNextion 目标上验证
+- ONX2424G013 已在真实硬件上验证
+- Wi-Fi 配网流程已在所有 OpenNextion 目标上验证
 - 雷达显示和 ADS-B 刷新已在硬件上进行视觉验证
-- BOOT 短按切换量程和长按重置已支持
+- 所有开发板支持 BOOT 短按切换量程和长按重置
+- ONX2424G013 旋钮按压（KEY）短按/长按已支持
 - 当前固件尚未使用触摸和 SD 卡
 
 ### 固件验证矩阵
@@ -138,6 +148,7 @@ OpenNextion 开发板带有触摸和 SD 卡硬件，但当前固件尚未使用�
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | ONX3248G035 | ✅ 已验证 | ✅ 已验证 | ✅ 已验证 | ✅ 已验证 | ✅ 已验证 | ⏳ 未使用 | ⏳ 未使用 | 3.5 英寸 ST7796U 显示屏 |
 | ONX2432G028 | ✅ 已验证 | ✅ 已验证 | ✅ 已验证 | ✅ 已验证 | ✅ 已验证 | ⏳ 未使用 | ⏳ 未使用 | 2.8 英寸 ST7789 显示屏 |
+| ONX2424G013 | ✅ 已验证 | ✅ 已验证 | ✅ 已验证 | ✅ 已验证 | ✅ 已验证 | ⏳ 未使用 | ⏳ 未使用 | 1.28 英寸 GC9A01N 圆形，旋钮编码器 |
 
 ## 文档
 
@@ -172,3 +183,4 @@ Plane Radar 显示来自公开 ADS-B 来源的飞机数据，并依赖网络可�
 
 [onx3248g035]: https://nextion.tech/wiki/onx3248g035/
 [onx2432g028]: https://nextion.tech/wiki/onx2432g028/
+[onx2424g013]: https://nextion.tech/wiki/onx2424g013/

@@ -8,22 +8,23 @@
 </p>
 
 OpenNextion ESP32 Plane Radar is a ready-to-flash desktop aircraft radar for
-OpenNextion ESP32-S3 rectangular displays. It is based on the excellent
-[ESP32 Plane Radar](https://github.com/MatixYo/ESP32-Plane-Radar) project and
-adds OpenNextion board support, portrait rectangular UI layouts, Wi-Fi setup,
-and release binaries for supported OpenNextion displays.
+OpenNextion ESP32-S3 displays — both rectangular and round. It is based on the
+excellent [ESP32 Plane Radar](https://github.com/MatixYo/ESP32-Plane-Radar)
+project and adds OpenNextion board support, display-optimised UI layouts, Wi-Fi
+setup, and release binaries for supported OpenNextion displays.
 
 Use it to place a small ESP32 ADS-B radar display on your desk, configure your
 location through Wi-Fi setup, and watch nearby aircraft on a compact radar UI.
 
 ## Supported Displays
 
-The public `v0.1.0` release targets two OpenNextion portrait displays:
+The public `v0.1.0` release targets three OpenNextion displays:
 
-| Display model | Size | Resolution | Orientation | PlatformIO env | Status |
-| --- | --- | --- | --- | --- | --- |
-| [ONX3248G035][onx3248g035] | 3.5 inch | 320 x 480 | Portrait | `onx3248g035` | Verified |
-| [ONX2432G028][onx2432g028] | 2.8 inch | 240 x 320 | Portrait | `onx2432g028` | Verified |
+| Display model | Size | Resolution | Shape | Orientation | PlatformIO env | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| [ONX3248G035][onx3248g035] | 3.5 inch | 320 x 480 | Rectangle | Portrait | `onx3248g035` | Verified |
+| [ONX2432G028][onx2432g028] | 2.8 inch | 240 x 320 | Rectangle | Portrait | `onx2432g028` | Verified |
+| [ONX2424G013][onx2424g013] | 1.28 inch | 240 x 240 | Round | — | `onx2424g013` | Verified |
 
 Do not flash firmware built for one display model onto the other display model.
 
@@ -31,9 +32,10 @@ Do not flash firmware built for one display model onto the other display model.
 
 I found an excellent aircraft radar project on GitHub called
 [ESP32 Plane Radar](https://github.com/MatixYo/ESP32-Plane-Radar). The original
-project is mainly designed for a round display, but the displays I have on hand
-are rectangular OpenNextion ESP32 displays, so I decided to port Plane Radar to
-these rectangular screens.
+project is mainly designed for a round display, which makes the 1.28 inch
+ONX2424G013 round display a natural fit. I also ported the radar UI to the
+rectangular OpenNextion displays I have on hand, adapting the layout for
+portrait rectangular screens.
 
 The OpenNextion boards use ESP32-S3 as the main controller and provide useful
 hardware resources for DIY projects, including schematics, board files, and
@@ -52,6 +54,9 @@ Each enclosure is intended to be a simple desktop shell for the matching
 OpenNextion display. Peel off the tape around the edge of the matching display,
 then press the display into the printed enclosure and use the adhesive edge to
 hold it in place.
+
+The ONX2424G013 round display has a built-in knob form factor and does not need
+a separate 3D printed enclosure.
 
 MakerWorld project links:
 
@@ -92,7 +97,10 @@ settings.
 
 ### BOOT Button
 
-Plane Radar uses the BOOT button for quick device actions.
+Plane Radar uses the BOOT button for quick device actions. On the round
+ONX2424G013, the **knob encoder can also be pressed** — it behaves exactly like
+the BOOT button, so you can control everything from the front-facing knob
+without ever touching the PCB.
 
 | Action | Effect |
 | --- | --- |
@@ -100,17 +108,19 @@ Plane Radar uses the BOOT button for quick device actions.
 | Hold 3 s | Clear Wi-Fi, location, and units; reboot into setup portal |
 | Hold during setup / boot | Force credential reset and setup portal |
 
-BOOT is GPIO `0` on the OpenNextion ESP32-S3 targets.
+BOOT is GPIO `0` on all OpenNextion ESP32-S3 targets. The knob press (KEY) is
+GPIO `9` on ONX2424G013.
 
 ## Firmware Download and Flashing
 
 Download firmware from the GitHub Releases page. The `v0.1.0` release provides
 one merged full-flash binary per supported display model:
 
-| Display model | Orientation | Firmware file | Flash address |
+| Display model | Shape | Firmware file | Flash address |
 | --- | --- | --- | --- |
-| [ONX3248G035][onx3248g035] | Portrait | `opennextion-esp32-plane-radar-v0.1.0-onx3248g035.bin` | `0x0` |
-| [ONX2432G028][onx2432g028] | Portrait | `opennextion-esp32-plane-radar-v0.1.0-onx2432g028.bin` | `0x0` |
+| [ONX3248G035][onx3248g035] | Rectangle | `opennextion-esp32-plane-radar-v0.1.0-onx3248g035.bin` | `0x0` |
+| [ONX2432G028][onx2432g028] | Rectangle | `opennextion-esp32-plane-radar-v0.1.0-onx2432g028.bin` | `0x0` |
+| [ONX2424G013][onx2424g013] | Round | `opennextion-esp32-plane-radar-v0.1.0-onx2424g013.bin` | `0x0` |
 
 Flash the matching merged binary at address `0x0`:
 
@@ -121,21 +131,28 @@ python -m esptool --chip esp32s3 -p /dev/cu.wchusbserial1110 -b 921600 write_fla
 
 Replace the serial port and firmware filename for your board.
 
+> **ONX2424G013 flashing note**: The round display uses ESP32-S3 built-in USB
+> (no external UART bridge). To enter download mode, hold **BOOT** (GPIO0), press
+> and release **RST**, then release **BOOT** before running the flash command.
+> See the [Build & Flash guide](docs/BUILD_AND_FLASH.md) for details.
+
 For this release, full firmware flashing is recommended. OTA firmware downloads
 are not provided unless the OTA flow is separately validated.
 
 ## Current Porting Work
 
 This version is based on ESP32 Plane Radar and focuses on OpenNextion board
-support for the two verified displays.
+support for the three verified displays.
 
 Main changes in this fork:
 
-- Dedicated PlatformIO board targets for ONX3248G035 and ONX2432G028
+- Dedicated PlatformIO board targets for ONX3248G035, ONX2432G028, and ONX2424G013
 - Board-specific LovyanGFX panel configuration for the supported displays
 - Portrait rectangular radar layouts for 3.5 inch and 2.8 inch screens
+- Circular radar UI for the 1.28 inch round display (ONX2424G013)
 - Compact bottom information panel for rectangular display space
-- BOOT button range switching and configuration reset behavior
+- BOOT button range switching and configuration reset behaviour
+- Knob encoder press (KEY) as a secondary control on ONX2424G013
 - Merged firmware generation for simple full flashing from address `0x0`
 
 Touch and SD card hardware are present on the OpenNextion boards, but this
@@ -151,9 +168,11 @@ firmware does not use them yet.
 
 - ONX3248G035 has been validated on real hardware
 - ONX2432G028 has been validated on real hardware
-- Wi-Fi setup flow has been validated on the OpenNextion targets
+- ONX2424G013 has been validated on real hardware
+- Wi-Fi setup flow has been validated on all OpenNextion targets
 - Radar display and ADS-B refresh have been validated visually on hardware
-- BOOT short tap range switching and long-press reset are supported
+- BOOT short tap range switching and long-press reset are supported on all boards
+- Knob press (KEY) short tap and long-press are supported on ONX2424G013
 - Touch and SD card are not used by this firmware yet
 
 ### Firmware Validation Matrix
@@ -164,6 +183,7 @@ Legend: ✅ Verified / ⚠️ Partially verified or hardware-dependent / ⏳ Not
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | ONX3248G035 | ✅ Verified | ✅ Verified | ✅ Verified | ✅ Verified | ✅ Verified | ⏳ Not used | ⏳ Not used | 3.5 inch ST7796U display |
 | ONX2432G028 | ✅ Verified | ✅ Verified | ✅ Verified | ✅ Verified | ✅ Verified | ⏳ Not used | ⏳ Not used | 2.8 inch ST7789 display |
+| ONX2424G013 | ✅ Verified | ✅ Verified | ✅ Verified | ✅ Verified | ✅ Verified | ⏳ Not used | ⏳ Not used | 1.28 inch GC9A01N round, knob encoder |
 
 ## Documentation
 
@@ -205,3 +225,4 @@ or delayed aircraft data, legal consequences, or any other consequences of use.
 
 [onx3248g035]: https://nextion.tech/wiki/onx3248g035/
 [onx2432g028]: https://nextion.tech/wiki/onx2432g028/
+[onx2424g013]: https://nextion.tech/wiki/onx2424g013/
