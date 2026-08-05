@@ -3,13 +3,18 @@
 This project uses PlatformIO with the Arduino framework. The commands below are
 for the supported OpenNextion ESP32-S3 boards.
 
+> **⚠️ Note for ONX2424G013 users:** The round display uses ESP32-S3 built-in
+> USB-OTG. **Every flash requires manually entering download mode** — hold BOOT,
+> press RST, release BOOT, then run the upload command. See the [Upload](#upload-from-platformio)
+> section for details.
+
 ## Supported PlatformIO Environments
 
 | Environment | Display model | Resolution | Orientation |
 | --- | --- | --- | --- |
 | `onx3248g035` | ONX3248G035 | 320 x 480 | Portrait |
 | `onx2432g028` | ONX2432G028 | 240 x 320 | Portrait |
-| `onx2424g013` | ONX2424G013 | 240 x 240 | Round |
+| `onx2424g013` | ONX2424G013 | 240 x 240 | Round | **Manual flash required** |
 
 ## Build
 
@@ -52,6 +57,11 @@ rm -rf .pio/build/onx2424g013 .pio/libdeps/onx2424g013
 
 ## Upload from PlatformIO
 
+### Rectangular Displays (One-Click Upload)
+
+ONX3248G035 and ONX2432G028 use external USB-UART bridge chips (CH340/CP2102).
+Upload is a single command — esptool handles the reset automatically.
+
 ```bash
 pio run -e onx2432g028 -t upload --upload-port <PORT>
 pio run -e onx3248g035 -t upload --upload-port <PORT>
@@ -63,11 +73,14 @@ Example OpenNextion serial port on macOS:
 pio run -e onx3248g035 -t upload --upload-port /dev/cu.wchusbserial1110
 ```
 
-### ONX2424G013 Manual Flash
+### ⚠️ ONX2424G013 — Manual Download Mode Required
 
-ONX2424G013 uses ESP32-S3 built-in USB-OTG with no external UART bridge chip.
-Because the firmware holds the USB-CDC port, esptool cannot automatically reset the
-chip into download mode. A manual procedure is required:
+> **The ONX2424G013 cannot be flashed with a single command.**  
+> It uses ESP32-S3 built-in USB-OTG with no external UART bridge chip. Because the
+> firmware holds the USB-CDC port, esptool cannot automatically reset the chip into
+> download mode. **You must manually enter download mode before every flash.**
+
+**Procedure (required every time you flash):**
 
 1. **Hold BOOT** (GPIO0 button on the back of the board)
 2. **Press and release RST (EN)** once
@@ -78,8 +91,8 @@ chip into download mode. A manual procedure is required:
 pio run -e onx2424g013 -t upload --upload-port <PORT>
 ```
 
-This step is only needed for ONX2424G013. The rectangular displays (ONX3248G035,
-ONX2432G028) use external USB-UART chips and support one-click upload.
+If you see a `Failed to connect` error, the chip was not in download mode.
+Repeat the procedure and make sure you run the command immediately after step 3.
 
 ## Monitor Serial Log
 
@@ -126,15 +139,18 @@ VERSION=v0.1.0
 
 ## Flash a Merged Release Binary
 
-Merged release binaries should be flashed at address `0x0`:
+Merged release binaries should be flashed at address `0x0`.
+
+### Rectangular Displays
 
 ```bash
 python -m esptool --chip esp32s3 -p <PORT> -b 921600 write_flash \
   0x0 ./opennextion-esp32-plane-radar-v0.1.0-onx3248g035.bin
 ```
 
-For ONX2424G013, manually enter download mode first (hold BOOT, press RST,
-release BOOT), then flash:
+### ⚠️ ONX2424G013 — Manual Download Mode Required
+
+Same as PlatformIO upload: **hold BOOT, press RST, release BOOT**, then flash:
 
 ```bash
 python -m esptool --chip esp32s3 -p <PORT> -b 921600 write_flash \
