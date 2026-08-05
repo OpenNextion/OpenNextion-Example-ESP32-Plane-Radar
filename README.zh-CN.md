@@ -4,16 +4,9 @@
 [![中文](https://img.shields.io/badge/lang-中文-red)](./README.zh-CN.md)
 
 <p align="center">
-  <table>
-    <tr>
-      <td align="center"><img src="docs/images/opennextion-esp32-plane-radar-demo.jpg" alt="ONX3248G035 & ONX2432G028 矩形屏" width="400"></td>
-      <td align="center"><img src="docs/images/onx2424g013-demo.JPG" alt="ONX2424G013 圆形屏" width="400"></td>
-    </tr>
-    <tr>
-      <td align="center"><sub>ONX3248G035 & ONX2432G028 矩形屏</sub></td>
-      <td align="center"><sub>ONX2424G013 圆形屏</sub></td>
-    </tr>
-  </table>
+  <img src="docs/images/devices-combined.jpg" alt="OpenNextion ESP32 Plane Radar 在矩形屏和圆形屏上的运行效果" width="900">
+  <br>
+  <sub>左：ONX3248G035 / ONX2432G028 矩形屏 &nbsp;|&nbsp; 右：ONX2424G013 圆形屏</sub>
 </p>
 
 OpenNextion ESP32 Plane Radar 是一个面向 OpenNextion ESP32-S3 显示屏（矩形屏和圆形屏）的桌面飞机雷达固件，可以直接刷写使用。它基于优秀的 [ESP32 Plane Radar](https://github.com/MatixYo/ESP32-Plane-Radar) 项目，并增加了 OpenNextion 开发板支持、屏幕适配的 UI 布局、Wi-Fi 配网流程，以及已支持 OpenNextion 显示屏的 release 固件。

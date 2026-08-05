@@ -4,16 +4,9 @@
 [![中文](https://img.shields.io/badge/lang-中文-red)](./README.zh-CN.md)
 
 <p align="center">
-  <table>
-    <tr>
-      <td align="center"><img src="docs/images/opennextion-esp32-plane-radar-demo.jpg" alt="ONX3248G035 & ONX2432G028 rectangular displays" width="400"></td>
-      <td align="center"><img src="docs/images/onx2424g013-demo.JPG" alt="ONX2424G013 round display" width="400"></td>
-    </tr>
-    <tr>
-      <td align="center"><sub>ONX3248G035 & ONX2432G028 Rectangular</sub></td>
-      <td align="center"><sub>ONX2424G013 Round</sub></td>
-    </tr>
-  </table>
+  <img src="docs/images/devices-combined.jpg" alt="OpenNextion ESP32 Plane Radar on rectangular and round displays" width="900">
+  <br>
+  <sub>Left: ONX3248G035 / ONX2432G028 rectangular &nbsp;|&nbsp; Right: ONX2424G013 round</sub>
 </p>
 
 OpenNextion ESP32 Plane Radar is a ready-to-flash desktop aircraft radar for
