@@ -18,7 +18,13 @@ constexpr bool kBoardOnx3248g035 = true;
 constexpr bool kBoardOnx3248g035 = false;
 #endif
 
-constexpr bool kBoardOnx = kBoardOnx2432g028 || kBoardOnx3248g035;
+#if defined(BOARD_ONX2424G013)
+constexpr bool kBoardOnx2424g013 = true;
+#else
+constexpr bool kBoardOnx2424g013 = false;
+#endif
+
+constexpr bool kBoardOnx = kBoardOnx2432g028 || kBoardOnx3248g035 || kBoardOnx2424g013;
 
 // --- Wi-Fi portal ---
 constexpr char kPortalApName[] = "PlaneRadar-Setup";
@@ -45,8 +51,16 @@ constexpr unsigned long kBootResetHoldMs = 3000UL;
 /** Ignore BOOT taps shorter than this (debounce). */
 constexpr unsigned long kBootTapMinMs = 40UL;
 
+// --- Encoder KEY (GPIO9, active LOW) — ONX2424G013 only ---
+constexpr bool kHasKeyButton = kBoardOnx2424g013;
+constexpr gpio_num_t kKeyPin = GPIO_NUM_9;
+constexpr unsigned long kKeyTapMinMs = 40UL;
+
 // --- Display ---
-constexpr gpio_num_t kDisplayPinRst = kBoardOnx ? GPIO_NUM_NC : GPIO_NUM_0;
+// ONX2424G013: GC9A01N RST via GPIO8 (no PCF8574)
+// ONX2432G028 / ONX3248G035: RST via PCF8574 (GPIO_NC)
+// Original (non-ONX): RST = GPIO0
+constexpr gpio_num_t kDisplayPinRst = kBoardOnx2424g013 ? GPIO_NUM_8 : (kBoardOnx ? GPIO_NUM_NC : GPIO_NUM_0);
 constexpr gpio_num_t kDisplayPinCs = kBoardOnx ? GPIO_NUM_2 : GPIO_NUM_1;
 constexpr gpio_num_t kDisplayPinDc = kBoardOnx ? GPIO_NUM_3 : GPIO_NUM_10;
 constexpr gpio_num_t kDisplayPinMosi = kBoardOnx ? GPIO_NUM_1 : GPIO_NUM_3;
@@ -63,11 +77,13 @@ constexpr int kRadarViewportX = (kDisplayWidth - kRadarViewportSize) / 2;
 constexpr int kRadarViewportY =
     kBoardOnx ? 0 : (kDisplayHeight - kRadarViewportSize) / 2;
 constexpr bool kFrameSpriteUsePsram = kBoardOnx3248g035;
-constexpr bool kRadarInfoPanelEnabled = kBoardOnx;
+// Round 240×240 has no room for info panel; rectangular ONX boards only.
+constexpr bool kRadarInfoPanelEnabled = kBoardOnx && !kBoardOnx2424g013;
 constexpr int kRadarInfoPanelY = kBoardOnx3248g035 ? 330 : 246;
 
 constexpr uint32_t kDisplaySpiWriteHz = 40000000;
-constexpr bool kDisplayInvert = kBoardOnx ? false : true;
+// GC9A01N needs invert; other ONX panels (ST7789/ST7796U) do not.
+constexpr bool kDisplayInvert = kBoardOnx2424g013 ? true : (kBoardOnx ? false : true);
 constexpr bool kDisplayRgbOrder = true;
 constexpr uint8_t kDisplayRotation = 0;
 

@@ -25,6 +25,13 @@ volatile unsigned long s_boot_down_ms = 0;
 bool s_long_press_handled = false;
 bool s_boot_interrupt_attached = false;
 
+// --- KEY button (GPIO9) for ONX2424G013 ---
+volatile bool s_key_tap_pending = false;
+volatile bool s_key_is_down = false;
+volatile unsigned long s_key_down_ms = 0;
+bool s_key_long_press_handled = false;
+bool s_key_interrupt_attached = false;
+
 void IRAM_ATTR onBootButtonIsr() {
   if (!config::kHasBootButton) {
     return;
@@ -46,6 +53,26 @@ void IRAM_ATTR onBootButtonIsr() {
   portEXIT_CRITICAL_ISR(&s_boot_mux);
 }
 
+void IRAM_ATTR onKeyButtonIsr() {
+  if (!config::kHasKeyButton) {
+    return;
+  }
+  const bool down = digitalRead(config::kKeyPin) == LOW;
+  const unsigned long now = millis();
+  portENTER_CRITICAL_ISR(&s_boot_mux);
+  if (down) {
+    s_key_is_down = true;
+    s_key_down_ms = now;
+  } else if (s_key_is_down) {
+    const unsigned long held = now - s_key_down_ms;
+    if (held >= config::kKeyTapMinMs) {
+      s_key_tap_pending = true;
+    }
+    s_key_is_down = false;
+  }
+  portEXIT_CRITICAL_ISR(&s_boot_mux);
+}
+
 void initBootButton() {
   if (!config::kHasBootButton) {
     return;
@@ -57,6 +84,19 @@ void initBootButton() {
   attachInterrupt(digitalPinToInterrupt(static_cast<uint8_t>(config::kBootPin)),
                   onBootButtonIsr, CHANGE);
   s_boot_interrupt_attached = true;
+}
+
+void initKeyButton() {
+  if (!config::kHasKeyButton) {
+    return;
+  }
+  pinMode(config::kKeyPin, INPUT_PULLUP);
+  if (s_key_interrupt_attached) {
+    return;
+  }
+  attachInterrupt(digitalPinToInterrupt(static_cast<uint8_t>(config::kKeyPin)),
+                  onKeyButtonIsr, CHANGE);
+  s_key_interrupt_attached = true;
 }
 
 namespace {
@@ -413,6 +453,48 @@ void bootButtonPollLongPress() {
     s_boot_is_down = false;
     portEXIT_CRITICAL(&s_boot_mux);
     s_long_press_handled = false;
+  }
+}
+
+void keyButtonInit() { initKeyButton(); }
+
+bool keyButtonConsumeTap() {
+  if (!config::kHasKeyButton) {
+    return false;
+  }
+  portENTER_CRITICAL(&s_boot_mux);
+  const bool tap = s_key_tap_pending;
+  if (tap) {
+    s_key_tap_pending = false;
+  }
+  portEXIT_CRITICAL(&s_boot_mux);
+  return tap;
+}
+
+void keyButtonPollLongPress() {
+  if (!config::kHasKeyButton) {
+    return;
+  }
+  if (digitalRead(config::kKeyPin) == LOW) {
+    portENTER_CRITICAL(&s_boot_mux);
+    if (!s_key_is_down) {
+      s_key_is_down = true;
+      s_key_down_ms = millis();
+    }
+    const unsigned long down_ms = s_key_down_ms;
+    portEXIT_CRITICAL(&s_boot_mux);
+
+    if (!s_key_long_press_handled &&
+        millis() - down_ms >= config::kBootResetHoldMs) {
+      s_key_long_press_handled = true;
+      Serial.println("KEY held — resetting WiFi");
+      wifiResetCredentialsAndReboot();
+    }
+  } else {
+    portENTER_CRITICAL(&s_boot_mux);
+    s_key_is_down = false;
+    portEXIT_CRITICAL(&s_boot_mux);
+    s_key_long_press_handled = false;
   }
 }
 

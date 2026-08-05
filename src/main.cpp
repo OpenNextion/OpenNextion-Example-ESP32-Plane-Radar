@@ -50,15 +50,24 @@ void handleBootButton() {
   }
 }
 
+void handleKeyButton() {
+  keyButtonPollLongPress();
+  if (keyButtonConsumeTap()) {
+    onRangeTap();
+  }
+}
+
 void fetchAndDrawAircraft() {
   const float fetch_km = ui::radar::fetchRadiusKm();
   if (!services::adsb::fetchUpdate(services::location::lat(),
                                    services::location::lon(), fetch_km)) {
     handleBootButton();
+    handleKeyButton();
     return;
   }
   ui::radarDisplayRefreshAircraft();
   handleBootButton();
+  handleKeyButton();
 }
 
 }  // namespace
@@ -70,6 +79,7 @@ void setup() {
   Serial.println("Plane Radar");
 
   bootButtonInit();
+  keyButtonInit();
   displayInit();
   if (wifiShowsSetupScreenOnBoot()) {
     statusScreenPortal();
@@ -85,6 +95,7 @@ void setup() {
 
 void loop() {
   handleBootButton();
+  handleKeyButton();
   wifiLoop();
 
   if (WiFi.status() != WL_CONNECTED) {
