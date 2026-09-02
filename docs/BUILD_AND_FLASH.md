@@ -83,22 +83,6 @@ mode automatically:
 pio run -e onx2424g013 -t upload --upload-port <PORT>
 ```
 
-**Upgrading from an older firmware?** If the device still runs a firmware build
-that holds the USB port as a CDC device (older builds without the
-`-DARDUINO_USB_MODE=1` fix), enter download mode manually **once** to upgrade:
-
-1. **Hold BOOT** (GPIO0 button on the back of the board)
-2. **Press and release RST (EN)** once
-3. **Release BOOT**
-4. **Immediately run:**
-
-```bash
-pio run -e onx2424g013 -t upload --upload-port <PORT>
-```
-
-If you see a `Failed to connect` error, the chip was not in download mode.
-Repeat the procedure and make sure you run the command immediately after step 3.
-
 ## Monitor Serial Log
 
 ```bash
@@ -156,9 +140,7 @@ python -m esptool --chip esp32s3 -p <PORT> -b 921600 write_flash \
 ### ONX2424G013
 
 Same as PlatformIO upload — esptool resets the chip automatically, no BOOT
-button required. (Only when upgrading from an older firmware that holds the USB
-port as a CDC device: enter download mode manually once — **hold BOOT, press
-RST, release BOOT**.) Then flash:
+button required. Then flash:
 
 ```bash
 python -m esptool --chip esp32s3 -p <PORT> -b 921600 write_flash \
