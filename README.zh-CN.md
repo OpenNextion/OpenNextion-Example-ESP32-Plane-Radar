@@ -104,7 +104,7 @@ python -m esptool --chip esp32s3 -p /dev/cu.wchusbserial1110 -b 921600 write_fla
 
 请根据你的开发板替换串口和固件文件名。
 
-> **ONX2424G013 刷写注意**：圆形屏使用 ESP32-S3 内置 USB（无外部 UART 桥接芯片）。进入烧录模式需按住 **BOOT**（GPIO0），按一下 **RST** 后松开，再松开 **BOOT**，然后执行刷写命令。详见[构建与刷写指南](docs/BUILD_AND_FLASH.md)。
+> **ONX2424G013 刷写注意**：圆形屏使用 ESP32-S3 内置 USB-Serial-JTAG（无外部 UART 桥接芯片）。esptool 会自动将芯片复位进入烧录模式，**无需按 BOOT 键**。详见[构建与刷写指南](docs/BUILD_AND_FLASH.md)。
 
 对于这个 release，推荐使用完整固件刷写。除非 OTA 流程单独验证，否则不提供 OTA 固件下载。
 
