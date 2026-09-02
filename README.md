@@ -133,11 +133,6 @@ python -m esptool --chip esp32s3 -p /dev/cu.wchusbserial1110 -b 921600 write_fla
 
 Replace the serial port and firmware filename for your board.
 
-> **ONX2424G013 flashing note**: The round display uses ESP32-S3 built-in
-> USB-Serial-JTAG (no external UART bridge). esptool resets the chip into
-> download mode automatically — no BOOT button required.
-> See the [Build & Flash guide](docs/BUILD_AND_FLASH.md) for details.
-
 For this release, full firmware flashing is recommended. OTA firmware downloads
 are not provided unless the OTA flow is separately validated.
 

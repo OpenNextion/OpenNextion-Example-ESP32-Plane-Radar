@@ -3,11 +3,6 @@
 This project uses PlatformIO with the Arduino framework. The commands below are
 for the supported OpenNextion ESP32-S3 boards.
 
-> **Note for ONX2424G013 users:** The round display uses the ESP32-S3 built-in
-> USB-Serial-JTAG (no external UART bridge chip). Uploads work with a single
-> command — esptool resets the chip into download mode automatically, no BOOT
-> button required. See the [Upload](#upload-from-platformio) section for details.
-
 ## Supported PlatformIO Environments
 
 | Environment | Display model | Resolution | Orientation |
@@ -57,30 +52,19 @@ rm -rf .pio/build/onx2424g013 .pio/libdeps/onx2424g013
 
 ## Upload from PlatformIO
 
-### Rectangular Displays (One-Click Upload)
-
-ONX3248G035 and ONX2432G028 use external USB-UART bridge chips (CH340/CP2102).
-Upload is a single command — esptool handles the reset automatically.
+All three boards support one-click upload — connect the board via USB and run
+the command. esptool resets the chip into download mode automatically.
 
 ```bash
 pio run -e onx2432g028 -t upload --upload-port <PORT>
 pio run -e onx3248g035 -t upload --upload-port <PORT>
+pio run -e onx2424g013 -t upload --upload-port <PORT>
 ```
 
 Example OpenNextion serial port on macOS:
 
 ```bash
 pio run -e onx3248g035 -t upload --upload-port /dev/cu.wchusbserial1110
-```
-
-### ONX2424G013 — One-Click Upload
-
-The ONX2424G013 uses the ESP32-S3 built-in USB-Serial-JTAG with no external UART
-bridge chip. Upload is a single command — esptool resets the chip into download
-mode automatically:
-
-```bash
-pio run -e onx2424g013 -t upload --upload-port <PORT>
 ```
 
 ## Monitor Serial Log
@@ -130,21 +114,9 @@ VERSION=v0.1.0
 
 Merged release binaries should be flashed at address `0x0`.
 
-### Rectangular Displays
-
 ```bash
 python -m esptool --chip esp32s3 -p <PORT> -b 921600 write_flash \
   0x0 ./opennextion-esp32-plane-radar-v0.1.0-onx3248g035.bin
-```
-
-### ONX2424G013
-
-Same as PlatformIO upload — esptool resets the chip automatically, no BOOT
-button required. Then flash:
-
-```bash
-python -m esptool --chip esp32s3 -p <PORT> -b 921600 write_flash \
-  0x0 ./opennextion-esp32-plane-radar-v0.1.0-onx2424g013.bin
 ```
 
 Replace `<PORT>` and the firmware filename for your board.
